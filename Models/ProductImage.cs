@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace urban_dukan_product_service.Models
 {
     public class ProductImage
@@ -5,6 +7,9 @@ namespace urban_dukan_product_service.Models
         public int Id { get; set; }
         public int ProductId { get; set; }
         public string Url { get; set; } = default!;
+
+        // Prevent cycles by not serializing the back-reference
+        [JsonIgnore]
         public Product? Product { get; set; }
     }
 }

@@ -34,9 +34,7 @@ jobs:
         
       - name: Run EF Core Migrations
         working-directory: ./
-        run: dotnet ef database update --verbose
-        env:
-          ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION }}
+        run: dotnet ef database update --connection "${{ secrets.DB_CONNECTION }}" --verbose
 
       - name: dotnet publish
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"

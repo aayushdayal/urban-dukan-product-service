@@ -54,14 +54,14 @@ using (var scope = app.Services.CreateScope())
     var logger = services.GetRequiredService<ILogger<Program>>();
     try
     {
-        var db = services.GetRequiredService<UrbanDukanProductDbContext>();
-        logger.LogInformation("Applying migrations...");
-        db.Database.Migrate();
+        //var db = services.GetRequiredService<UrbanDukanProductDbContext>();
+        //logger.LogInformation("Applying migrations...");
+        //db.Database.Migrate();
 
-        var seeder = services.GetRequiredService<IDbSeeder>();
-        logger.LogInformation("Starting DB seeding...");
-        seeder.SeedAsync().GetAwaiter().GetResult();
-        logger.LogInformation("DB seeding finished.");
+        //var seeder = services.GetRequiredService<IDbSeeder>();
+        //logger.LogInformation("Starting DB seeding...");
+        //seeder.SeedAsync().GetAwaiter().GetResult();
+        //logger.LogInformation("DB seeding finished.");
     }
     catch (Exception ex)
     {
@@ -77,7 +77,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Urban Dukan Product API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "UrbanDukan User Service v1");
+        c.RoutePrefix = string.Empty;
     });
 }
 

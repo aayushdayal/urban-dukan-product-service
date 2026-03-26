@@ -47,38 +47,37 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Run automatic migrations and seed DB at startup
+// Run DB seeding at startup (migrations intentionally NOT run here)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var logger = services.GetRequiredService<ILogger<Program>>();
     try
     {
+        // Note: migrations are not applied here by design.
         //var db = services.GetRequiredService<UrbanDukanProductDbContext>();
         //logger.LogInformation("Applying migrations...");
         //db.Database.Migrate();
 
-        //var seeder = services.GetRequiredService<IDbSeeder>();
-        //logger.LogInformation("Starting DB seeding...");
-        //seeder.SeedAsync().GetAwaiter().GetResult();
-        //logger.LogInformation("DB seeding finished.");
+        var seeder = services.GetRequiredService<IDbSeeder>();
+        logger.LogInformation("Starting DB seeding...");
+        seeder.SeedAsync().GetAwaiter().GetResult();
+        logger.LogInformation("DB seeding finished.");
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "Database migration/seed failed.");
-        // rethrow if you want the app to stop on seed failure:
-        // throw;
+        logger.LogError(ex, "Database seed failed.");
+        // Do not rethrow to allow the app to start even if seeding fails.
     }
 }
 
 // Configure the HTTP request pipeline.
-
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "UrbanDukan User Service v1");
-        c.RoutePrefix = string.Empty;
-    });
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "UrbanDukan User Service v1");
+    c.RoutePrefix = string.Empty;
+});
 
 app.UseHttpsRedirection();
 

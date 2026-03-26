@@ -26,16 +26,6 @@ jobs:
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
-      - name: Install EF Core CLI
-        run: dotnet tool install --global dotnet-ef
-    
-      - name: Add .NET tools to PATH
-        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-        
-      - name: Run EF Core Migrations
-        working-directory: ./
-        run: dotnet ef database update --connection "${{ secrets.DB_CONNECTION }}" --verbose
-
       - name: dotnet publish
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 

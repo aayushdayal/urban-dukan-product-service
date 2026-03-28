@@ -39,7 +39,7 @@ namespace urban_dukan_product_service.Controllers
         /// <summary>
         /// Get product by id.
         /// </summary>
-        [Authorize]
+        //[Authorize]
         [HttpGet("{id:int}")]
         [ProducesResponseType(typeof(Product), 200)]
         [ProducesResponseType(404)]

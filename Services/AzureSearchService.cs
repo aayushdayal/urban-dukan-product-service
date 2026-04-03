@@ -122,6 +122,25 @@ namespace urban_dukan_product_service.Services
             }
         }
 
+        public async Task<List<string>> GetSuggestionsAsync(string searchText)
+        {
+            var options = new SuggestOptions
+            {
+                Size = 5,
+                UseFuzzyMatching = true
+            };
+
+            var response = await _client.SuggestAsync<ProductSearchDto>(
+                searchText,
+                "product-suggester",
+                options
+            );
+
+            return response.Value.Results
+                .Select(r => r.Text)
+                .ToList();
+        }
+
     }
     
 }

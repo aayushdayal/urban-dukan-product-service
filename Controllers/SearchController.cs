@@ -108,5 +108,16 @@ namespace urban_dukan_product_service.Controllers
                 return StatusCode(502, "Delete from index failed.");
             }
         }
+
+        [HttpGet("autocomplete")]
+        public async Task<IActionResult> Autocomplete([FromQuery] string query)
+        {
+            if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+                return Ok(new List<string>());
+
+            var results = await _search.GetSuggestionsAsync(query);
+
+            return Ok(results);
+        }
     }
 }

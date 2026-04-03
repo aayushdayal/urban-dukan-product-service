@@ -1,8 +1,9 @@
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using urban_dukan_product_service.Data;
+using urban_dukan_product_service.Dtos;
 using urban_dukan_product_service.Models;
 
 namespace urban_dukan_product_service.Services
@@ -41,6 +42,28 @@ namespace urban_dukan_product_service.Services
         public async Task<Product?> GetProductByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _db.Products.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        }
+
+        public async Task<List<ProductSearchDto>> GetProductsForIndexingAsync(
+    int skip,
+    int take,
+    CancellationToken cancellationToken = default)
+        {
+            return await _db.Products
+                .AsNoTracking()
+                .OrderBy(p => p.Id)
+                .Skip(skip)
+                .Take(take)
+                .Select(p => new ProductSearchDto
+                {
+                    Id = p.Id.ToString(),
+                    Title = p.Title,
+                    Description = p.Description,
+                    Price = p.Price,
+                    Brand = p.Brand ?? "",
+                    Category = p.Category
+                })
+                .ToListAsync(cancellationToken);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using urban_dukan_product_service.Dtos;
 using urban_dukan_product_service.Models;
 
 namespace urban_dukan_product_service.Services
@@ -8,5 +9,6 @@ namespace urban_dukan_product_service.Services
     {
         Task<ProductsResponse?> GetProductsAsync(int limit = 30, int skip = 0, string? search = null, CancellationToken cancellationToken = default);
         Task<Product?> GetProductByIdAsync(int id, CancellationToken cancellationToken = default);
+        Task<List<ProductSearchDto>> GetProductsForIndexingAsync(int skip, int take, CancellationToken cancellationToken = default);
     }
 }

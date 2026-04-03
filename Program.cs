@@ -1,17 +1,54 @@
+using Azure;
+using Azure.Search.Documents;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using System.Text;
 using urban_dukan_product_service.Data;
 using urban_dukan_product_service.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
+// Azure Search configuration and SearchClient registration
+var azureEndpoint = builder.Configuration["AzureSearch:Endpoint"];
+var azureApiKey = builder.Configuration["AzureSearch:ApiKey"];
+var azureIndexName = builder.Configuration["AzureSearch:IndexName"];
+
+if (!string.IsNullOrWhiteSpace(azureEndpoint) &&
+    !string.IsNullOrWhiteSpace(azureApiKey) &&
+    !string.IsNullOrWhiteSpace(azureIndexName))
+{
+    builder.Services.AddSingleton(sp =>
+    {
+        var endpointUri = new Uri(azureEndpoint);
+        var credential = new AzureKeyCredential(azureApiKey);
+        return new SearchClient(endpointUri, azureIndexName, credential);
+    });
+
+    // Register the search service that depends on IProductService (IProductService must be registered)
+    builder.Services.AddScoped<ISearchService, AzureSearchService>();
+
+    // Register optional hosted service that can trigger reindex at startup (controlled by config AzureSearch:AutoReindexOnStartup)
+    builder.Services.AddScoped<ProductSearchIndexingService>();
+    bool autoReindexOnStartup = builder.Configuration.GetValue<bool>("AzureSearch:AutoReindexOnStartup", false);
+    if (autoReindexOnStartup)
+    {
+        builder.Services.AddHostedService<SearchReindexingHostedService>();
+    }
+}
+else
+{
+    throw new InvalidOperationException("Azure Search configuration is missing or incomplete. Please provide AzureSearch:Endpoint, AzureSearch:ApiKey, and AzureSearch:IndexName in configuration.");
+    // If Azure Search configuration missing, leave registrations out so the app still starts
+}
+
+// Existing registrations...
 // JWT Authentication
 var jwtKey = builder.Configuration["JwtSettings:Key"]; // store in appsettings or env
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
@@ -153,7 +190,7 @@ app.UseHttpsRedirection();
 // Apply CORS before Authorization and routing
 app.UseCors("LocalUI");
 
-app.UseAuthentication();  
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

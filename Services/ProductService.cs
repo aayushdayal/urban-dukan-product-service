@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using urban_dukan_product_service.Data;
 using urban_dukan_product_service.Dtos;
 using urban_dukan_product_service.Models;
+using System.Collections.Generic;
 
 namespace urban_dukan_product_service.Services
 {
@@ -64,6 +65,20 @@ namespace urban_dukan_product_service.Services
                     Category = p.Category
                 })
                 .ToListAsync(cancellationToken);
+        }
+
+        // Added: efficient bulk fetch of full product entities (includes Images)
+        public async Task<List<Product>> GetProductsByIdsAsync(List<int> ids, CancellationToken cancellationToken = default)
+        {
+            if (ids == null || ids.Count == 0) return new List<Product>();
+
+            var products = await _db.Products
+                .AsNoTracking()
+                .Include(p => p.Images)
+                .Where(p => ids.Contains(p.Id))
+                .ToListAsync(cancellationToken);
+
+            return products;
         }
     }
 }
